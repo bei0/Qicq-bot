@@ -17,6 +17,12 @@
   * 冷插拔
   * 冷加载
 
+
+### 生命周期
+`触发对话`--->`消息接收`---->`消息分级`---->`执行插件`---->`返回消息`
+
+> 因为聊天的每次对话都在在同一个接口进行，所以在`消息接受`和`消息分级`的时候都是在寻找需要执行得`插件`，在发送人和机器人的每一回合对话我都当作一个`指令`或者一段`程序`得`生命周期`.
+
 ---
 
 ## 依赖
@@ -41,22 +47,36 @@ Qicq-bot
  ├── PluginFrame
  │   ├── PluginManager
  │   ├── Plugins
- │   └── main.py
+ │   └── plugins_conf.py
  ├── sk
+ ├── static
+ ├── utils
+ │   ├── simple_to_img.py  
+ │   └── text_to_img.py
  ├── globe.py
+ ├── config.py
+ ├── config.yaml
  └── main.py
  
  # api： fastapi的接口封装
  # cqhttp： cqhttp相关封装
      # api.py：cqhttp请求API常量封装
-     # request_model.py cqhttp请求API的参数封装
-     # resp_model.py cqhttp请求API的返回体封装
+     # request_model.py： cqhttp请求API的参数封装
+     # cq_code.py： cq_code消息封装(发送qq消息时使用)
+     # resp_model.py： cqhttp请求API的返回体封装
  # PluginFrame： 插件相关目录
      # PluginManager：插件管理封装目录
      # Plugins：插件代码存放目录（PluginManager会自动扫描插件）
+     # plugins_conf：插件配置文件(封装支持正则指令匹配，装饰器为插件赋予指令)
      # main.py： 暂时没用
  # sk：websocket操作封装目录
+ # static：静态文件目录
+ # utils：工具目录
+     # simple_to_img.py：简单的文字转图片
+     # text_to_img.py：文字转图片
  # globe.py：公共常量/变量定义文件--如：socket链接对象
+ # config.yaml：项目配置文件
+  # config.py：项目配置文件读取封装
  # main.py：项目启动文件
  
  还差一个关键性项目配置文件（后期在补上）

@@ -28,3 +28,8 @@ class ApiField:
 class ParamsModel(BaseModel):
     params: dict = {}
 
+
+class SendMsgModel(BaseModel):
+    action: str
+    params: dict
+    echo: str

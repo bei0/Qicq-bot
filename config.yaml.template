@@ -1,0 +1,8 @@
+# Path: config.yaml
+server:
+  port: 6555
+  host: 0.0.0.0
+
+chatGpt:
+  - Api:
+      key: "your key"

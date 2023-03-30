@@ -1,3 +1,5 @@
+import json
+
 from globe import connections
 
 
@@ -15,9 +17,9 @@ class ConnectionManager:
         connections.remove(ws)
 
     @staticmethod
-    async def send_personal_message(message: str, ws):
+    async def send_personal_message(message: dict, ws):
         # 发送个人消息
-        await ws.send_text(message)
+        await ws.send_text(json.dumps(message))
 
     # async def broadcast(self, message: str):
     #     # 广播消息

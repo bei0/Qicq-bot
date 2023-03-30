@@ -1,7 +1,11 @@
+import abc
 import os
 import sys
 from imp import find_module
 from imp import load_module
+from loguru import logger
+
+bash_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 class PluginManager(type):
@@ -28,12 +32,12 @@ class PluginManager(type):
     # 递归检测插件路径下的所有插件，并将它们存到内存中
     @staticmethod
     def load_all_plugin():
-        plugin_path = PluginManager.__PluginPath
+        plugin_path = os.path.join(bash_path, PluginManager.__PluginPath)
         if not os.path.isdir(plugin_path):
             raise EnvironmentError('%s is not a directory' % plugin_path)
-
         items = os.listdir(plugin_path)
         for item in items:
+
             if os.path.isdir(os.path.join(plugin_path, item)):
                 PluginManager.__PluginPath = os.path.join(plugin_path, item)
                 PluginManager.load_all_plugin()
@@ -43,7 +47,7 @@ class PluginManager(type):
                     if module_name not in sys.modules:
                         file_handle, file_path, dect = find_module(module_name, [plugin_path])
                     try:
-                        module_obj = load_module(module_name, file_handle, file_path, dect)
+                        load_module(module_name, file_handle, file_path, dect)
                     finally:
                         if file_handle: file_handle.close()
 
@@ -54,9 +58,10 @@ class PluginManager(type):
 
     # 注册插件
     def register_all_plugin(self, a_plugin):
-        plugin_name = '.'.join([a_plugin.__module__, a_plugin.__name__])
+        assert not a_plugin.__name__ in self._AllPlugins, "Plugin %s already registered" % a_plugin.__name__
         plugin_obj = a_plugin()
-        self._AllPlugins[plugin_name] = plugin_obj
+        logger.info(f"加载插件：{a_plugin.__name__}")
+        self._AllPlugins[a_plugin.__name__] = plugin_obj
 
     # 注销插件
     def unregister_plugin(self, plugin_name):
@@ -88,41 +93,30 @@ class PluginManager(type):
 class ModelComponent(metaclass=PluginManager):
     __name__ = 'ModelComponent'
 
-    def start(self):
+    @abc.abstractmethod
+    def start(self, message_parameter):
         print('Please write the Start() function')
-
-    def change_language(self, language):
-        print('Please write the ChangeLanguage() function')
 
 
 class ModelMenuObj(metaclass=PluginManager):
     __name__ = 'ModelMenuObj'
 
-    def start(self):
+    def start(self, message_parameter):
         print('Please write the Start() function')
-
-    def change_language(self, language):
-        print('Please write the ChangeLanguage() function')
 
 
 class ModelToolBarObj(metaclass=PluginManager):
     __name__ = 'ModelToolBarObj'
 
-    def start(self):
+    def start(self, message_parameter):
         print('Please write the Start() function')
-
-    def change_language(self, language):
-        print('Please write the ChangeLanguage() function')
 
 
 class ModelParamPanelObj(metaclass=PluginManager):
     __name__ = 'ModelParamPanelObj'
 
-    def start(self):
+    def start(self, message_parameter):
         print('Please write the Start() function')
-
-    def change_language(self, language):
-        print('Please write the ChangeLanguage() function')
 
 
 __ALLMODEL__ = (ModelParamPanelObj, ModelToolBarObj, ModelMenuObj, ModelComponent)

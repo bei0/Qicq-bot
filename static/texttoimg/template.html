@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" initial-scale="1"/>
+    <title>Parsed content</title>
+
+    <link href="{path_texttoimg}/css/default.css" rel="stylesheet" />
+    <link href="{path_texttoimg}/css/github-md.css" rel="stylesheet" >
+    <script src="{path_texttoimg}/js/highlight.js"></script>
+    <script src="{path_texttoimg}/js/MathJax.js"></script>
+    <script src="{path_texttoimg}/js/twemoji.min.js"></script>
+    <style>
+        #MathJax_Message {
+            display: none;
+        }
+        .content {
+            min-height: 60px;
+        }
+        .MathJax {
+            font-size: 25px !important;
+        }
+        html {
+            font-size: {font_size_texttoimg}px;
+        }
+        @font-face {
+            font-family: "Custom Font";
+            src: url("{font_path_texttoimg}");
+        }
+    </style>
+</head>
+
+<body>
+    <div id="header"><div></div></div>
+    <div id="content">{content}</div>
+    <div id="footer">
+        <div class="qrc">
+            <div id="qrcode">
+<!--                <img src="{qrcode}" alt="" srcset="" width="120" height="120">-->
+            </div>
+        </div>
+    </div>
+    <script>
+        twemoji.parse(document.getElementById("content"), {
+            base: '{path_texttoimg}',
+            folder: '/emoji/png',
+            ext: '.png'
+        });
+        MathJax.Hub.Config({
+              config: ["MMLorHTML.js"],
+              jax: ["input/TeX", "output/HTML-CSS", "output/NativeMML"],
+              extensions: []
+            });
+        hljs.initHighlighting();
+        var codes = document.querySelectorAll('code')
+        for (var i = 0; i < codes.length; i++) {
+            var item = codes[i]
+            try {
+                var lang = item.classList[0].split('-')[1];
+                if (lang) {
+                  item.title = "[lang: " + lang + "]";
+                }
+            } catch (e) {
+
+            }
+        }
+    </script>
+</body>
+
+</html>
