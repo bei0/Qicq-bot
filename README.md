@@ -33,6 +33,11 @@
 
 ---
 
+## 灵感来源
+- ![ChatGPT Mirai QQ Bot](https://camo.githubusercontent.com/345a7bfe8d089531f2dc52c5e0326f7e4c097da58db2ceb976e078be35c0e50d/68747470733a2f2f62616467656e2e6e65742f6769746875622f73746172732f6c73733233332f636861746770742d6d697261692d71712d626f743f69636f6e3d676974687562266c6162656c3d7374617273) [ChatGPT Mirai QQ Bot](https://github.com/LaoJiuGua/chatgpt-mirai-qq-bot)
+  - **消息转图片**基于此项目之上进行修改
+---
+
 ## 目录
 
 ```
