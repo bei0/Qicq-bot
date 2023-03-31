@@ -1,3 +1,6 @@
+import re
+import time
+
 import requests
 from loguru import logger
 
@@ -6,7 +9,7 @@ from PluginFrame.plugins_conf import registration_directive
 from config import Config
 from cqhttp import SendMsgModel
 from cqhttp.api import CQApiConfig
-from cqhttp.cq_code import CqReply
+from cqhttp.cq_code import CqReply, CqImage, CqNode, CqJson
 from cqhttp.request_model import SendPrivateMsgRequest, SendGroupMsgRequest, DeleteMsgRequest
 from globe import connections, HOST_REGX
 from sk import manager
@@ -66,7 +69,7 @@ class PingHostPlugin(ModelComponent):
                 f"收到群组({message_info.get('group_id')})消息：{sender.get('nickname')}({sender.get('user_id')})---->{message_info.get('message')}"
             )
             if Config.cqhttp.cqType == "http":
-                wait = f"""{CqReply(message_info.get("message_id")).cq} 正在查询中，请稍后..."""
+                wait = f"""{CqReply(message_info.get("message_id")).cq} 正在Ping中，请稍后..."""
                 wait_message = await self.send_group_msg(message_info.get("group_id"), wait)
                 wait_message = wait_message.get("data")
                 status, data = self.get_girl_url(host)
@@ -83,8 +86,8 @@ class PingHostPlugin(ModelComponent):
                 f"收到私人消息：{sender.get('nickname')}({sender.get('user_id')})---->{message_info.get('message')}"
             )
             if Config.cqhttp.cqType == "http":
-                wait = f"""{CqReply(message_info.get("message_id")).cq} 正在查询中，请稍后..."""
-                wait_message = await self.send_private_msg(message_info.get("group_id"), wait)
+                wait = f"""{CqReply(message_info.get("message_id")).cq} 正在Ping中，请稍后..."""
+                wait_message = await self.send_private_msg(sender.get("user_id"), wait)
                 wait_message = wait_message.get("data")
                 status, data = self.get_girl_url(host)
                 await DeleteMsgRequest(message_id=wait_message.get("message_id")).send_request(
@@ -93,13 +96,13 @@ class PingHostPlugin(ModelComponent):
             else:
                 status, data = self.get_girl_url(host)
             data = f"{CqReply(message_info.get('message_id')).cq} {await to_image(data)}"
-            await self.send_private_msg(message_info.get("group_id"), data)
+            await self.send_private_msg(sender.get("user_id"), data)
         return ''
 
     @staticmethod
     def get_girl_url(url):
-        resp = requests.get(f"https://v.api.aa1.cn/api/api-ping/ping.php?url={url}").json()
         try:
+            resp = requests.get(f"https://v.api.aa1.cn/api/api-ping/ping.php?url={url}").json()
             data = f"""
             Ping {url} 的结果为：
                 域名：{resp.get("host")}
@@ -125,4 +128,137 @@ class PingHostPlugin(ModelComponent):
     async def send_private_msg(user_id, message):
         return await SendPrivateMsgRequest(user_id=user_id, message=message).send_request(
             CQApiConfig.message.send_private_msg.Api
+        )
+
+
+@registration_directive(matching=r'^#舔狗', message_types=("private", "group"))
+class AnimeWallpapersPlugin(ModelComponent):
+    __name__ = 'AnimeWallpapersPlugin'
+
+    async def start(self, message_parameter):
+
+        message_info = message_parameter.get("message_info")
+        sender = message_info.get("sender")
+        # 调用GPT-3聊天机器人
+
+        if message_info.get("message_type") == "group":
+            logger.info(
+                f"收到群组({message_info.get('group_id')})消息：{sender.get('nickname')}({sender.get('user_id')})---->{message_info.get('message')}"
+            )
+            if Config.cqhttp.cqType == "http":
+                wait = f"""{CqReply(message_info.get("message_id")).cq} 请稍后..."""
+                wait_message = await self.send_group_msg(message_info.get("group_id"), wait)
+                wait_message = wait_message.get("data")
+                time.sleep(3)
+                await DeleteMsgRequest(message_id=wait_message.get("message_id")).send_request(
+                    CQApiConfig.message.delete_msg.Api
+                )
+
+            data = f"{CqReply(message_info.get('message_id')).cq} {self.get_girl_url()}"
+            await self.send_group_msg(message_info.get("group_id"), data)
+
+        elif message_info.get("message_type") == "private":
+            logger.info(
+                f"收到私人消息：{sender.get('nickname')}({sender.get('user_id')})---->{message_info.get('message')}"
+            )
+            if Config.cqhttp.cqType == "http":
+                wait = f"""{CqReply(message_info.get("message_id")).cq} 请稍后..."""
+                wait_message = await self.send_private_msg(sender.get("user_id"), wait)
+                wait_message = wait_message.get("data")
+                await DeleteMsgRequest(message_id=wait_message.get("message_id")).send_request(
+                    CQApiConfig.message.delete_msg.Api
+                )
+            data = f"{CqReply(message_info.get('message_id')).cq} {self.get_girl_url()}"
+            await self.send_private_msg(sender.get("user_id"), data)
+
+    def get_girl_url(self):
+        try:
+            resp = requests.get("https://v.api.aa1.cn/api/tiangou/")
+            text = re.findall(r"<p>(.*?)</p>", resp.text)
+        except:
+            text = ["接口似乎出现问题了！！"]
+        return text[0]
+
+
+    @staticmethod
+    async def send_group_msg(group_id, message):
+        return await SendGroupMsgRequest(group_id=group_id, message=message).send_request(
+            CQApiConfig.message.send_group_msg.Api
+        )
+
+    @staticmethod
+    async def send_private_msg(user_id, message):
+        return await SendPrivateMsgRequest(user_id=user_id, message=message).send_request(
+            CQApiConfig.message.send_private_msg.Api
+        )
+
+
+@registration_directive(matching=r'^#今日热点', message_types=("private", "group"))
+class TodayHotSpotPlugin(ModelComponent):
+    __name__ = 'TodayHotSpotPlugin'
+
+    async def start(self, message_parameter):
+
+        message_info = message_parameter.get("message_info")
+        sender = message_info.get("sender")
+        # 调用GPT-3聊天机器人
+
+        if message_info.get("message_type") == "group":
+            logger.info(
+                f"收到群组({message_info.get('group_id')})消息：{sender.get('nickname')}({sender.get('user_id')})---->{message_info.get('message')}"
+            )
+            if Config.cqhttp.cqType == "http":
+                wait = f"""{CqReply(message_info.get("message_id")).cq} 请稍后..."""
+                wait_message = await self.send_group_msg(message_info.get("group_id"), wait)
+                wait_message = wait_message.get("data")
+                time.sleep(3)
+                await DeleteMsgRequest(message_id=wait_message.get("message_id")).send_request(
+                    CQApiConfig.message.delete_msg.Api
+                )
+
+            await self.send_group_msg(message_info.get("group_id"), '', send_data=self.get_girl_url(), is_forward=True)
+
+        elif message_info.get("message_type") == "private":
+            logger.info(
+                f"收到私人消息：{sender.get('nickname')}({sender.get('user_id')})---->{message_info.get('message')}"
+            )
+            if Config.cqhttp.cqType == "http":
+                wait = f"""{CqReply(message_info.get("message_id")).cq} 请稍后..."""
+                wait_message = await self.send_private_msg(sender.get("user_id"), wait)
+                wait_message = wait_message.get("data")
+                await DeleteMsgRequest(message_id=wait_message.get("message_id")).send_request(
+                    CQApiConfig.message.delete_msg.Api
+                )
+
+            # data = f"{CqJson(self.get_girl_url()).cq}"
+            # print(data)
+            await self.send_private_msg(sender.get("user_id"), '', send_data=self.get_girl_url(), is_forward=True)
+
+    def get_girl_url(self):
+        try:
+            resp = requests.get("https://v.api.aa1.cn/api/topbaidu/")
+            _dict_list = []
+            for _ in resp.json().get("newslist"):
+                _dict = CqNode(name="北.", uin=1113855149, content=f"{CqReply(text=_.get('title'),qq=1113855149).cq} {_.get('digest')}").json
+                # _dict = CqNode(name="北.", uin=1113855149, content=f"{_.get('digest')}").json
+                _dict_list.append(_dict)
+                break
+
+        except:
+            _dict_list = [CqNode(name="北.", uin=1113855149, content=f"接口似乎出现问题了！！").json]
+        return _dict_list
+
+
+    @staticmethod
+    async def send_group_msg(group_id, message, send_data=None, is_forward=False):
+        return await SendGroupMsgRequest(group_id=group_id, message=message).send_request(
+            CQApiConfig.message.send_group_msg.Api if not is_forward else CQApiConfig.message.send_group_forward_msg.Api,
+            send_data=send_data, group_id=group_id
+        )
+
+    @staticmethod
+    async def send_private_msg(user_id, message, send_data=None, is_forward=False):
+        return await SendPrivateMsgRequest(user_id=user_id, message=message).send_request(
+            CQApiConfig.message.send_private_msg.Api if not is_forward else CQApiConfig.message.send_private_forward_msg.Api,
+            send_data=send_data, user_id=user_id
         )

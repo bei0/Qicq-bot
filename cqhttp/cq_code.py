@@ -107,3 +107,39 @@ class CqReply(CQCode):
         }))
 
         return cq_text
+
+
+@dataclasses.dataclass
+class CqNode(CQCode):
+    id: int = None
+    name: str = None
+    uin: int = None
+    content: str = None
+
+    @property
+    def json(self):
+
+        _ = {
+            "type": 'node',
+            "data": self._remove_optional({
+                "id": self.id,
+                "name": self._optionally_strfy(self.name),
+                "uin": self._optionally_strfy(self.uin),
+                "content": self._optionally_strfy(self.content),
+                # "seq": self._optionally_strfy(self.content)
+            })
+        }
+
+        return _
+
+
+@dataclasses.dataclass
+class CqJson(CQCode):
+    data: Union[dict, list] = None
+
+    @property
+    def cq(self):
+
+        _ = self.to_cq("json", {"data": self.data})
+
+        return _

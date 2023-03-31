@@ -16,7 +16,7 @@ from cqhttp.request_model import SendPrivateMsgRequest
 from utils.text_to_img import to_image
 
 
-@registration_directive(matching=r'^(?![-.#\[])([\s\S]*)', message_types=("private",))
+@registration_directive(matching=r'^(?![-.#\[\r\n])([\s\S]*)', message_types=("private",))
 class PrivateMessagePlugin(ModelComponent):
     __name__ = 'privateMessage'
 
