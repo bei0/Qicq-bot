@@ -1,8 +1,7 @@
 import os
 from typing import Optional, List
-from loguru import logger
 import yaml
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 
 class ProjectConfig(BaseModel):
@@ -16,6 +15,22 @@ class ServerConfig(BaseModel):
     host: str
 
 
+class CqhttpHttpConfig(BaseModel):
+    host: str
+    port: int
+
+
+class CqhttpConfig(BaseModel):
+    cqType: str
+    http: Optional[CqhttpHttpConfig] = None
+
+    @validator('cqType')
+    def verify_cqType(cls, value):
+        if value not in ['http', 'ws']:
+            raise ValueError('cqType must be http or ws')
+        return value
+
+
 class ApiConfig(BaseModel):
     key: str
 
@@ -26,6 +41,7 @@ class ChatGptConfig(BaseModel):
 
 class PrConfig(ProjectConfig):
     server: Optional[ServerConfig] = None
+    cqhttp: Optional[CqhttpConfig] = None
     chatGpt: Optional[ChatGptConfig] = None
 
     @staticmethod
@@ -41,6 +57,8 @@ class PrConfig(ProjectConfig):
         for api in y.get('chatGpt', []):
             api_list.append(ApiConfig(**api['Api']))
         Config.chatGpt = ChatGptConfig(Api=api_list)
+
+        Config.cqhttp = CqhttpConfig(**y['cqhttp'])
 
 
 Config = PrConfig()

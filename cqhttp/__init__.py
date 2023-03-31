@@ -25,11 +25,11 @@ class ApiField:
         return f"{self.Name}({self.Api})"
 
 
-class ParamsModel(BaseModel):
-    params: dict = {}
-
-
 class SendMsgModel(BaseModel):
     action: str
     params: dict
     echo: str
+
+
+class SendHttpMsgModel(BaseModel):
+    ...

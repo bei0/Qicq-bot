@@ -87,3 +87,23 @@ class CqImage(CQCode):
         return cq_text
 
 
+@dataclasses.dataclass
+class CqReply(CQCode):
+    id: int = None
+    text: str = None
+    qq: int = None
+    time: int = None
+    seq: int = None
+
+    @property
+    def cq(self):
+
+        cq_text = self.to_cq("reply", self._remove_optional({
+            "id": self.id,
+            "text": self._optionally_strfy(self.text),
+            "qq": self._optionally_strfy(self.qq),
+            "time": self._optionally_strfy(self.time),
+            "seq": self._optionally_strfy(self.seq),
+        }))
+
+        return cq_text
