@@ -18,4 +18,4 @@ app.include_router(cqhttp)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app='main:app', host=Config.server.host, port=Config.server.port, reload=True, workers=2)
+    uvicorn.run(app='main:app', host=Config.server.host, port=Config.server.port, reload=True, workers=10)

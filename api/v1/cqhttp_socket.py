@@ -1,3 +1,5 @@
+import time
+
 from fastapi import APIRouter, WebSocketDisconnect, WebSocket
 
 from globe import connections
@@ -18,10 +20,20 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_json()
-
             message_dispose = MessageDispose()
             await message_dispose.dispose(data)
     except Exception as e:
         print(e)
         connections.remove(websocket)
         print("Client disconnected")
+
+
+@cqhttp.post("/callback")
+async def websocket_endpoint(body: dict):
+    message_dispose = MessageDispose()
+    await message_dispose.dispose(body)
+    return {
+        "status": "ok",
+        "retcode": 0,
+        'data': {},
+    }

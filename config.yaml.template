@@ -3,6 +3,15 @@ server:
   port: 6555
   host: 0.0.0.0
 
+
+cqhttp:
+  cqType: "http"    # http or ws
+  # cqType是http时，填写以下内容
+  http:
+    host: 172.16.150.147
+    port: 5700
+
+
 chatGpt:
   - Api:
       key: "your key"

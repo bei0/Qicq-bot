@@ -7,6 +7,7 @@ from loguru import logger
 
 from cqhttp import SendMsgModel
 from cqhttp.api import CQApiConfig
+from cqhttp.cq_code import CqReply
 from globe import connections
 from sk import manager
 
@@ -15,13 +16,14 @@ from cqhttp.request_model import SendPrivateMsgRequest
 from utils.text_to_img import to_image
 
 
-@registration_directive(matching=r'^(?![-.#\[])(.*)', message_types=("private",))
+@registration_directive(matching=r'^(?![-.#\[])([\s\S]*)', message_types=("private",))
 class PrivateMessagePlugin(ModelComponent):
     __name__ = 'privateMessage'
 
     async def start(self, message_parameter):
         message_info = message_parameter.get("message_info")
         sender = message_info.get("sender")
+        message_id = message_info.get("message_id")
         logger.info(
             f"收到私人消息：{sender.get('nickname')}({sender.get('user_id')})---->{message_info.get('message')}"
         )
@@ -29,13 +31,10 @@ class PrivateMessagePlugin(ModelComponent):
         resp = await self.send_message_to_gpt(message_info)
         logger.info(f"回复私人消息：{resp}")
         resp = await to_image(resp)
-
-        send_data = SendMsgModel(
-            action=CQApiConfig.message.send_private_msg.Api,
-            params=SendPrivateMsgRequest(user_id=sender.get("user_id"), message=resp).dict(),
-            echo="发送私人消息成功"
-        ).dict()
-        await manager.send_personal_message(send_data, connections.get_first_connection())
+        resp = CqReply(id=message_id).cq + " " + resp
+        await SendPrivateMsgRequest(user_id=sender.get("user_id"), message=resp).send_request(
+            CQApiConfig.message.send_private_msg.Api
+        )
 
     async def send_message_to_gpt(self, message_info):
         message = message_info.get("message")
