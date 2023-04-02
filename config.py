@@ -33,6 +33,7 @@ class CqhttpConfig(BaseModel):
 
 class ApiConfig(BaseModel):
     key: str
+    proxy: str
 
 
 class ChatGptConfig(BaseModel):
@@ -49,7 +50,7 @@ class PrConfig(ProjectConfig):
         config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
         if not os.path.exists(config_path):
             raise FileNotFoundError(f'config.yaml not found in {os.path.dirname(__file__)}')
-        with open(config_path, 'r') as f:
+        with open(config_path, 'r', encoding='utf-8') as f:
             y = yaml.full_load(f)
         Config.server = ServerConfig(**y['server'])
 

@@ -1,6 +1,6 @@
 import requests
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Union, Any
 from config import Config
 from cqhttp import SendMsgModel
 from globe import connections
@@ -25,14 +25,24 @@ class SendRequest(BaseModel):
 class SendPrivateMsgRequest(SendRequest):
     user_id: int
     group_id: Optional[int]
-    message: str
+    message: Union[str, dict, list[dict]]
     auto_escape: bool = False
+
+
+class SendPrivateNodeMsgRequest(SendRequest):
+    user_id: int
+    messages: Any
 
 
 class SendGroupMsgRequest(SendRequest):
     group_id: int
-    message: str
+    message: Union[str, dict, list[dict]]
     auto_escape: bool = False
+
+
+class SendGroupNodeMsgRequest(SendRequest):
+    group_id: int
+    messages: Any
 
 
 class DeleteMsgRequest(SendRequest):
