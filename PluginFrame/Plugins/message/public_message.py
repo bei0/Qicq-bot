@@ -10,7 +10,8 @@ from config import Config
 from cqhttp import SendMsgModel
 from cqhttp.api import CQApiConfig
 from cqhttp.cq_code import CqReply, CqImage, CqNode, CqJson
-from cqhttp.request_model import SendPrivateMsgRequest, SendGroupMsgRequest, DeleteMsgRequest
+from cqhttp.request_model import SendPrivateMsgRequest, SendGroupMsgRequest, DeleteMsgRequest, SendGroupNodeMsgRequest, \
+    SendPrivateNodeMsgRequest
 from globe import connections, HOST_REGX
 from sk import manager
 from utils.text_to_img import to_image
@@ -216,7 +217,7 @@ class TodayHotSpotPlugin(ModelComponent):
                     CQApiConfig.message.delete_msg.Api
                 )
 
-            await self.send_group_msg(message_info.get("group_id"), '', send_data=self.get_girl_url(), is_forward=True)
+            await self.send_group_node_msg(message_info.get("group_id"), self.get_girl_url())
 
         elif message_info.get("message_type") == "private":
             logger.info(
@@ -230,35 +231,42 @@ class TodayHotSpotPlugin(ModelComponent):
                     CQApiConfig.message.delete_msg.Api
                 )
 
-            # data = f"{CqJson(self.get_girl_url()).cq}"
-            # print(data)
-            await self.send_private_msg(sender.get("user_id"), '', send_data=self.get_girl_url(), is_forward=True)
+            await self.send_private_node_msg(sender.get("user_id"), self.get_girl_url())
 
     def get_girl_url(self):
         try:
             resp = requests.get("https://v.api.aa1.cn/api/topbaidu/")
             _dict_list = []
             for _ in resp.json().get("newslist"):
+                if not _.get('digest'):
+                    continue
                 _dict = CqNode(name="北.", uin=1113855149, content=f"{CqReply(text=_.get('title'),qq=1113855149).cq} {_.get('digest')}").json
-                # _dict = CqNode(name="北.", uin=1113855149, content=f"{_.get('digest')}").json
                 _dict_list.append(_dict)
-                break
-
         except:
             _dict_list = [CqNode(name="北.", uin=1113855149, content=f"接口似乎出现问题了！！").json]
         return _dict_list
 
 
     @staticmethod
-    async def send_group_msg(group_id, message, send_data=None, is_forward=False):
+    async def send_group_msg(group_id, message):
         return await SendGroupMsgRequest(group_id=group_id, message=message).send_request(
-            CQApiConfig.message.send_group_msg.Api if not is_forward else CQApiConfig.message.send_group_forward_msg.Api,
-            send_data=send_data, group_id=group_id
+            CQApiConfig.message.send_group_msg.Api
         )
 
     @staticmethod
-    async def send_private_msg(user_id, message, send_data=None, is_forward=False):
+    async def send_private_msg(user_id, message):
         return await SendPrivateMsgRequest(user_id=user_id, message=message).send_request(
-            CQApiConfig.message.send_private_msg.Api if not is_forward else CQApiConfig.message.send_private_forward_msg.Api,
-            send_data=send_data, user_id=user_id
+            CQApiConfig.message.send_private_msg.Api
+        )
+
+    @staticmethod
+    async def send_group_node_msg(group_id, messages):
+        return await SendGroupNodeMsgRequest(group_id=group_id, messages=messages).send_request(
+            CQApiConfig.message.send_group_forward_msg.Api
+        )
+
+    @staticmethod
+    async def send_private_node_msg(user_id, messages):
+        return await SendPrivateNodeMsgRequest(user_id=user_id, messages=messages).send_request(
+            CQApiConfig.message.send_private_forward_msg.Api
         )
