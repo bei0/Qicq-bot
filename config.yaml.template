@@ -15,3 +15,5 @@ cqhttp:
 chatGpt:
   - Api:
       key: "your key"
+      # 代理设置 不使用请注释掉
+      proxy："127.0.0.1:15732"
