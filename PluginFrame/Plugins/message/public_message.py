@@ -5,6 +5,7 @@ import requests
 from loguru import logger
 
 from PluginFrame.PluginManager import ModelComponent
+from PluginFrame.Plugins import BaseComponentPlugin
 from PluginFrame.plugins_conf import registration_directive
 from config import Config
 from cqhttp import SendMsgModel
@@ -18,7 +19,7 @@ from utils.text_to_img import to_image
 
 
 @registration_directive(matching=r'^#(美女|放松心情|轻松一刻)', message_types=("private", "group"))
-class DouYinBellePlugin(ModelComponent):
+class DouYinBellePlugin(BaseComponentPlugin):
     __name__ = 'DouYinBellePlugin'
     __desc__ = '都因'
 
@@ -57,7 +58,7 @@ class DouYinBellePlugin(ModelComponent):
 
 
 @registration_directive(matching=r'^#(ping|Ping) '+HOST_REGX, message_types=("private", "group"))
-class PingHostPlugin(ModelComponent):
+class PingHostPlugin(BaseComponentPlugin):
     __name__ = 'PingHostPlugin'
 
     async def start(self, message_parameter):
@@ -119,21 +120,9 @@ class PingHostPlugin(ModelComponent):
             status = 1
         return status, data
 
-    @staticmethod
-    async def send_group_msg(group_id, message):
-        return await SendGroupMsgRequest(group_id=group_id, message=message).send_request(
-            CQApiConfig.message.send_group_msg.Api
-        )
-
-    @staticmethod
-    async def send_private_msg(user_id, message):
-        return await SendPrivateMsgRequest(user_id=user_id, message=message).send_request(
-            CQApiConfig.message.send_private_msg.Api
-        )
-
 
 @registration_directive(matching=r'^#舔狗', message_types=("private", "group"))
-class AnimeWallpapersPlugin(ModelComponent):
+class AnimeWallpapersPlugin(BaseComponentPlugin):
     __name__ = 'AnimeWallpapersPlugin'
 
     async def start(self, message_parameter):
@@ -181,21 +170,8 @@ class AnimeWallpapersPlugin(ModelComponent):
         return text[0]
 
 
-    @staticmethod
-    async def send_group_msg(group_id, message):
-        return await SendGroupMsgRequest(group_id=group_id, message=message).send_request(
-            CQApiConfig.message.send_group_msg.Api
-        )
-
-    @staticmethod
-    async def send_private_msg(user_id, message):
-        return await SendPrivateMsgRequest(user_id=user_id, message=message).send_request(
-            CQApiConfig.message.send_private_msg.Api
-        )
-
-
 @registration_directive(matching=r'^#今日热点', message_types=("private", "group"))
-class TodayHotSpotPlugin(ModelComponent):
+class TodayHotSpotPlugin(BaseComponentPlugin):
     __name__ = 'TodayHotSpotPlugin'
 
     async def start(self, message_parameter):
@@ -245,28 +221,3 @@ class TodayHotSpotPlugin(ModelComponent):
         except:
             _dict_list = [CqNode(name="北.", uin=1113855149, content=f"接口似乎出现问题了！！").json]
         return _dict_list
-
-
-    @staticmethod
-    async def send_group_msg(group_id, message):
-        return await SendGroupMsgRequest(group_id=group_id, message=message).send_request(
-            CQApiConfig.message.send_group_msg.Api
-        )
-
-    @staticmethod
-    async def send_private_msg(user_id, message):
-        return await SendPrivateMsgRequest(user_id=user_id, message=message).send_request(
-            CQApiConfig.message.send_private_msg.Api
-        )
-
-    @staticmethod
-    async def send_group_node_msg(group_id, messages):
-        return await SendGroupNodeMsgRequest(group_id=group_id, messages=messages).send_request(
-            CQApiConfig.message.send_group_forward_msg.Api
-        )
-
-    @staticmethod
-    async def send_private_node_msg(user_id, messages):
-        return await SendPrivateNodeMsgRequest(user_id=user_id, messages=messages).send_request(
-            CQApiConfig.message.send_private_forward_msg.Api
-        )
