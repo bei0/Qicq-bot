@@ -5,6 +5,7 @@ from PluginFrame.plugins_conf import registration_directive
 from chatgpt.gpt_api import chatbot
 from loguru import logger
 
+from config import Config
 from cqhttp import SendMsgModel
 from cqhttp.api import CQApiConfig
 from cqhttp.cq_code import CqReply
@@ -26,7 +27,6 @@ class GroupMessagePlugin(ModelComponent):
         message_id = message_info.get("message_id")
         sender = message_info.get("sender")
         if re_obj.group(1) != str(message_info.get("self_id")):
-            print(re_obj.group(1))
             return
 
         logger.info(
@@ -35,7 +35,8 @@ class GroupMessagePlugin(ModelComponent):
         # 调用GPT-3聊天机器人
         resp = await self.send_message_to_gpt(re_obj.group(2))
         logger.info(f"回复私人消息：{resp}")
-        resp = await to_image(resp)
+        if Config.message.text_to_image:
+            resp = await to_image(resp)
         resp = CqReply(id=message_id).cq + " " + resp
         await SendGroupMsgRequest(group_id=message_info.get("group_id"), message=resp).send_request(
             CQApiConfig.message.send_group_msg.Api

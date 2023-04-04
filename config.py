@@ -15,6 +15,10 @@ class ServerConfig(BaseModel):
     host: str
 
 
+class MessageConfig(BaseModel):
+    text_to_image: bool
+
+
 class CqhttpHttpConfig(BaseModel):
     host: str
     port: int
@@ -40,10 +44,16 @@ class ChatGptConfig(BaseModel):
     Api: Optional[List[ApiConfig]]
 
 
+class BaaiConfig(BaseModel):
+    apiKey: str
+
+
 class PrConfig(ProjectConfig):
     server: Optional[ServerConfig] = None
     cqhttp: Optional[CqhttpConfig] = None
     chatGpt: Optional[ChatGptConfig] = None
+    message: Optional[MessageConfig] = None
+    baai: Optional[BaaiConfig] = None
 
     @staticmethod
     def config_load():
@@ -53,6 +63,8 @@ class PrConfig(ProjectConfig):
         with open(config_path, 'r', encoding='utf-8') as f:
             y = yaml.full_load(f)
         Config.server = ServerConfig(**y['server'])
+        Config.message = MessageConfig(**y['message'])
+        Config.baai = BaaiConfig(**y['baai'])
 
         api_list = []
         for api in y.get('chatGpt', []):

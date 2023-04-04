@@ -11,6 +11,11 @@ cqhttp:
     host: 172.16.150.147
     port: 5700
 
+message:
+  text_to_image: false
+
+baai:
+  apiKey: ''  # http://flagstudio.baai.ac.cn/document#1  ai绘画子自行申请
 
 chatGpt:
   - Api:
