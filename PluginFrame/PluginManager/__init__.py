@@ -1,8 +1,7 @@
 import abc
 import os
 import sys
-from imp import find_module
-from imp import load_module
+from imp import find_module, load_module
 from loguru import logger
 
 bash_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -10,46 +9,52 @@ bash_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class PluginManager(type):
     # 静态变量配置插件路径
-    __PluginPath = 'Plugins'
+    PluginPath = 'Plugins'
+    _AllPlugins = {}
+    module_names = []
     __name__ = 'Plugins'
 
     # 调用时将插件注册
     def __init__(self, _name, _bases, _dict):
-        if not hasattr(self, '_AllPlugins'):
-            self._AllPlugins = {}
-        else:
-            self.register_all_plugin(self)
+        # print(self)
+        # if not hasattr(self, '_AllPlugins'):
+        #     self._AllPlugins = {}
+        # else:
+        self.register_all_plugin(self)
         super(PluginManager, self).__init__(_name, _bases, _dict)
 
     # 设置插件路径
     @staticmethod
     def set_plugin_path(path):
         if os.path.isdir(path):
-            PluginManager.__PluginPath = path
+            PluginManager.PluginPath = path
         else:
             print('%s is not a valid path' % path)
 
     # 递归检测插件路径下的所有插件，并将它们存到内存中
     @staticmethod
     def load_all_plugin():
-        plugin_path = os.path.join(bash_path, PluginManager.__PluginPath)
+        plugin_path = os.path.join(bash_path, PluginManager.PluginPath)
         if not os.path.isdir(plugin_path):
             raise EnvironmentError('%s is not a directory' % plugin_path)
         items = os.listdir(plugin_path)
         for item in items:
 
             if os.path.isdir(os.path.join(plugin_path, item)):
-                PluginManager.__PluginPath = os.path.join(plugin_path, item)
+                PluginManager.PluginPath = os.path.join(plugin_path, item)
                 PluginManager.load_all_plugin()
             else:
                 if item.endswith('.py') and item != '__init__.py':
                     module_name = item[:-3]
+                    file_handle, file_path, dect = None, None, None
                     if module_name not in sys.modules:
                         file_handle, file_path, dect = find_module(module_name, [plugin_path])
                     try:
                         load_module(module_name, file_handle, file_path, dect)
+                        PluginManager.module_names.append(module_name)
                     finally:
-                        if file_handle: file_handle.close()
+                        if file_handle:
+                            file_handle.close()
 
     # 返回所有的插件
     @property
@@ -69,6 +74,15 @@ class PluginManager(type):
             plugin_obj = self._AllPlugins[plugin_name]
             del plugin_obj
 
+    @staticmethod
+    def reload_the_plugin():
+        for module_name in PluginManager.module_names:
+            if module_name in sys.modules:
+                sys.modules.pop(module_name)
+        PluginManager._AllPlugins = {}
+        PluginManager.load_all_plugin()
+
+
     # 获取插件对象。
     def get_plugin_object(self, plugin_name=None):
         if plugin_name is None:
@@ -79,7 +93,7 @@ class PluginManager(type):
 
     # 根据插件名字，获取插件对象。（提供插件之间的通信）
     @staticmethod
-    def get_plugin_by_name(plugin_name):
+    async def get_plugin_by_name(plugin_name):
         if plugin_name is None:
             return None
         else:
@@ -92,6 +106,8 @@ class PluginManager(type):
 # 插件框架的接入点。便于管理各个插件。各个插件通过继承接入点类，利用Python中metaclass的优势，将插件注册。接入点中定义了各个插件模块必须要实现的接口。
 class ModelComponent(metaclass=PluginManager):
     __name__ = 'ModelComponent'
+    desc = ''
+    permissions = ()
 
     @abc.abstractmethod
     def start(self, message_parameter):

@@ -2,14 +2,8 @@
 server:
   port: 6555
   host: 0.0.0.0
-
-
-cqhttp:
-  cqType: "http"    # http or ws
-  # cqType是http时，填写以下内容
-  http:
-    host: 172.16.150.147
-    port: 5700
+  api_root: "http://127.0.0.1:5700/"
+  manage_qq: 1113855149
 
 message:
   text_to_image: false

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="{html_path}\ml.css" />
+</head>
+<body> 
+
+<div class="kqtp">
+
+  <div class="bt">生成表情包目录</div>
+  </div>
+  <table border=0 px class ="bg1" width="800">
+{% for i, v in enumerate(data) %}
+
+ {% if i%4 != 0 %}
+	<td class="id">{{i}}</td>
+	<td class="rw">{{v}}</td>
+ {% end %}
+	
+ {% if i%4 == 0 %}
+	</tr>
+ {% end %}
+
+{% end %}
+
+ </table>
+
+<p class="jw" >By：北, 改自云崽Bot插件</p>
+<br>
+
+</body>
+</html>

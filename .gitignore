@@ -2,6 +2,7 @@
 .idea
 .DS_Store
 node_modules/
+data/
 __pycache__
 env/
 config.yaml

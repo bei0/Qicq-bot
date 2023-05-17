@@ -1,0 +1,20 @@
+<!--这里面的内容可以替换成其他内容-->
+<!-- the contact card -->
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="{html_path}\index.css">
+	<title>Document</title>
+</head>
+<body>
+	{% for k, v in data.items() %}
+	<div class="card">
+		<h1 class="plu_name">{{k}}</h1>
+		<h2 class="plu_status">开启状态: 开启</h2>
+	</div>
+	{% end %}
+</body>
+</html>

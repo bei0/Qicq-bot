@@ -1,0 +1,49 @@
+@font-face {
+font-family: "jty";
+src: url("jty.OTF");
+font-weight: normal;
+font-style: normal;
+}
+
+body{
+	width: 1200px;
+	/*background-image:url(wallhaven-q25o25.png);*/
+	background-image:url("https://api.r10086.com/樱道随机图片api接口.php?图片系列=原神横屏系列1");
+	/*filter: brightness(50%);*/
+	background-position: center;
+	background-size:cover;
+	background-repeat: no-repeat;
+}
+
+.card{
+	background: rgba(255,255,255,0.5);
+	height: 200px;
+	width: 200px;
+	margin: 15px;
+	padding: 50px;
+	border: medium ridge #9a9999;
+	text-align: center;
+	float: left;
+
+}
+
+.plu_name {
+
+	font-family: "jty";
+	color: #00e0fe;
+	font-weight:900;
+	font-size: 30px;
+	padding: 15px;
+	text-shadow:-2px 5px 5px black;
+
+}
+
+.plu_status {
+	font-family: "jty";
+	color: #000dfe;
+	font-size: 20px;
+	line-height: 15px;
+	font-weight:500;
+	padding: 5px;
+	text-shadow:1px 1px 2px pink;
+}
