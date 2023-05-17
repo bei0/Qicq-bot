@@ -6,6 +6,7 @@ import uuid
 from io import StringIO, BytesIO
 from tempfile import NamedTemporaryFile
 
+import aiohttp
 import markdown as markdown
 from PIL import Image, ImageFont, ImageDraw
 import os
@@ -29,6 +30,23 @@ class MdToImg:
         def extendMarkdown(self, md):
             md.inlinePatterns.deregister('html')
             md.preprocessors.deregister('html_block')
+
+    @staticmethod
+    async def __get_qr_data(text):
+        """将 Markdown 文本保存到 Mozilla Pastebin，并获得 URL"""
+        async with aiohttp.ClientSession() as session:
+            payload = {'expires': '86400', 'format': 'url', 'lexer': '_markdown', 'content': text}
+            try:
+                async with session.post('https://pastebin.mozilla.org/api/', data=payload) as resp:
+                    resp.raise_for_status()
+                    url = await resp.text()
+            except Exception as e:
+                url = f"上传失败：{str(e)}"
+            image = qrcode.make(url)
+            buffered = BytesIO()
+            image.save(buffered, format="JPEG")
+            img_str = base64.b64encode(buffered.getvalue())
+            return "data:image/jpeg;base64," + img_str.decode('utf-8')
 
     @property
     def template_html(self):
@@ -62,8 +80,12 @@ class MdToImg:
         h = f"<style>{css_style}</style>\n{h}"
         return h
 
-    async def text_to_image(self, text):
+    async def text_to_image(self, text, qr_code=None):
         ok, image = False, None
+
+        if not qr_code:
+            qr_code = await self.__get_qr_data(text)
+
         asset_folder = os.path.join(Config.BasePath, 'static', 'texttoimg')
         font_path = os.path.join(Config.BasePath, 'static', 'fonts', 'sarasa-mono-sc-regular.ttf')
         try:
@@ -71,7 +93,8 @@ class MdToImg:
             # 输出html到字符串io流
             with StringIO() as output_file:
                 # 填充正文
-                html = self.template_html.replace('{path_texttoimg}', pathlib.Path(asset_folder).as_uri())\
+                html = self.template_html.replace('{path_texttoimg}', pathlib.Path(asset_folder).as_uri()) \
+                    .replace("{qrcode}", qr_code) \
                     .replace("{content}", content) \
                     .replace("{font_size_texttoimg}", str(30)) \
                     .replace("{font_path_texttoimg}", pathlib.Path(font_path).as_uri())
@@ -103,7 +126,7 @@ class MdToImg:
                     image = Image.open(temp_jpg_filename, formats=['PNG']).convert('RGB')
                     ok = True
                 except Exception as e:
-                    logger.error("Markdown 渲染失败，使用备用模式")
+                    logger.error("Markdown 渲染失败")
                     # logger.exception(e)
                 finally:
                     # 删除临时文件
@@ -118,9 +141,9 @@ class MdToImg:
         return image
 
 
-async def to_image(text):
-    img = await MdToImg().text_to_image(text=text)
+async def to_image(text, qr_code=None):
+    img = await MdToImg().text_to_image(text=text, qr_code=qr_code)
     b = BytesIO()
     img.save(b, format="png")
-    return CqImage(file="base64://"+base64.b64encode(b.getvalue()).decode()).cq
+    return base64.b64encode(b.getvalue()).decode()
 

@@ -1,21 +1,28 @@
-from fastapi import FastAPI
-from loguru import logger
-
-from PluginFrame.PluginManager import PluginManager, __ALLMODEL__
-from api.v1.cqhttp_socket import cqhttp
+import asyncio
 from config import Config
 
-# 加载配置文件
+
+async def start_task():
+    """|coro|
+    以异步方式启动
+    """
+    from PluginFrame.PluginManager import PluginManager
+    PluginManager.load_all_plugin()
+
+    from PluginFrame.plugin_constant import init_manager_qq
+    init_manager_qq()
+
+    from PluginFrame.chace_data import init_cache
+    init_cache()
+
+    from cqhttp import bot
+    from message.message_dispose import MessageDispose
+    from message.notice_dispose import NoticeDispose
+    bot.on_message()(MessageDispose().dispose)
+    bot.on_notice()(NoticeDispose().dispose)
+    return await bot.run_task(host=Config.server.host, port=Config.server.port, use_reloader=True)
+
+
 Config.config_load()
-# 创建fastapi实例
-app = FastAPI()
-# 加载所有插件
-app.add_event_handler("startup", PluginManager.load_all_plugin)
-
-# 路由
-app.include_router(cqhttp)
-
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app='main:app', host=Config.server.host, port=Config.server.port, reload=True, workers=10)
+loop = asyncio.get_event_loop()
+loop.run_until_complete(start_task())

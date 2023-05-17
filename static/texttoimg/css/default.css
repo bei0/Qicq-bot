@@ -6,7 +6,8 @@ body {
     padding-bottom: 10px;
     background-color: white;
     padding: 30px;
-    color: #516272
+    color: #516272;
+    word-break: break-all
 }
 
 body>*:first-child {
@@ -1056,24 +1057,24 @@ html, body {
     color: #383838;
 }
 
-/*#qrcode {*/
-/*    text-align: right;*/
-/*}*/
+#qrcode {
+    text-align: right;
+}
 
-/*#qrcode > canvas {*/
-/*    border: 1px solid #cbcbcb;*/
-/*    border-radius: 5px;*/
-/*    !*padding: 5px;*!*/
-/*}*/
+#qrcode > canvas {
+    border: 1px solid #cbcbcb;
+    border-radius: 5px;
+    padding: 5px;
+}
 
 #footer {
-    height: 10px;
+    height: 50px;
 }
 
 #footer > .qrc {
     border-top: 1px solid #b82857;
-    margin-top: 5px;
-    padding-top: 5px;
+    margin-top: 20px;
+    padding-top: 10px;
     width: 300px;
     float: right;
 }

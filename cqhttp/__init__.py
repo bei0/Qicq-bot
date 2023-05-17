@@ -1,6 +1,9 @@
+import aiocqhttp
 from dataclasses import dataclass
-
 from pydantic import BaseModel
+from config import Config
+
+bot = aiocqhttp.CQHttp(api_root=Config.server.api_root)
 
 
 @dataclass

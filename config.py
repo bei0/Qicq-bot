@@ -13,31 +13,25 @@ class ProjectConfig(BaseModel):
 class ServerConfig(BaseModel):
     port: int
     host: str
+    api_root: Optional[str] = None
+    manager_qq: int
 
 
 class MessageConfig(BaseModel):
     text_to_image: bool
 
 
-class CqhttpHttpConfig(BaseModel):
-    host: str
-    port: int
-
-
-class CqhttpConfig(BaseModel):
-    cqType: str
-    http: Optional[CqhttpHttpConfig] = None
-
-    @validator('cqType')
-    def verify_cqType(cls, value):
-        if value not in ['http', 'ws']:
-            raise ValueError('cqType must be http or ws')
-        return value
-
-
 class ApiConfig(BaseModel):
     key: str
     proxy: str
+
+
+class GPT3Params(BaseModel):
+    temperature: float = 1
+    max_tokens: int = 3000
+    top_p: float = 1
+    presence_penalty: float = 1.0
+    frequency_penalty: float = -1.0
 
 
 class ChatGptConfig(BaseModel):
@@ -50,8 +44,8 @@ class BaaiConfig(BaseModel):
 
 class PrConfig(ProjectConfig):
     server: Optional[ServerConfig] = None
-    cqhttp: Optional[CqhttpConfig] = None
     chatGpt: Optional[ChatGptConfig] = None
+    gpt_params: Optional[GPT3Params] = None
     message: Optional[MessageConfig] = None
     baai: Optional[BaaiConfig] = None
 
@@ -65,13 +59,12 @@ class PrConfig(ProjectConfig):
         Config.server = ServerConfig(**y['server'])
         Config.message = MessageConfig(**y['message'])
         Config.baai = BaaiConfig(**y['baai'])
+        # Config.gpt_params = GPT3Params(**y['gpt_params'])
 
         api_list = []
         for api in y.get('chatGpt', []):
             api_list.append(ApiConfig(**api['Api']))
         Config.chatGpt = ChatGptConfig(Api=api_list)
-
-        Config.cqhttp = CqhttpConfig(**y['cqhttp'])
 
 
 Config = PrConfig()
